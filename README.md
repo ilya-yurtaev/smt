@@ -1,0 +1,4 @@
+smt
+===
+
+some test task
