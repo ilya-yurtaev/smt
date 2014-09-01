@@ -10,7 +10,7 @@ from .loaders import yaml_loader
 
 FIELD_MAP = {
     'char': ('CharField', {'max_length': 255}),
-    'date': ('DateField', {'auto_now_add': True}),
+    'date': ('DateField', {}),
     'int': ('IntegerField', {'default': 0}),
     'bool': ('BooleanField', {'default': True}),
 }

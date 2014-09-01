@@ -1,0 +1,100 @@
+@brand-primary: #058;
+@menu-width: 200px;
+
+a, a:active, a:visited{color:@brand-primary;}
+
+body{
+    padding:1.5em;
+}
+
+.link{
+    color:@brand-primary;
+    border-bottom:1px dotted @brand-primary;
+    cursor:pointer;
+}
+.active, .active:visited{
+    background: @brand-primary;
+    color:#fff;
+    text-decoration: none;
+}
+
+.common-space(){
+    padding-bottom:1.5em;
+}
+
+.wrapper{
+    .container-fixed();
+    .common-space();
+}
+
+.row{
+    .make-row();
+}
+
+.loading{
+    background:url("../img/fallout.jpg") center no-repeat;
+}
+
+.page{
+    padding-left:@menu-width;
+}
+
+#menu{
+    width:@menu-width;
+    margin-left:-@menu-width;
+    float:left;
+    ul{
+        list-style:none;
+        padding:0 0 1.5em;
+
+        li{
+            margin:0 0 5px;
+        }
+
+        a{
+            padding:.2em .5em;
+            margin-left: -.5em;
+        }
+    }
+}
+
+#main{
+}
+
+header, .page, footer{
+    &:extend(.clearfix all);
+    clear:both;
+}
+
+table{
+    border-collapse: collapse;
+    th, td{
+        padding:.5em 1em;
+        border-bottom: 1px solid #000;
+        text-align:left;
+    }
+    td{
+        border-bottom: 1px solid #ccc;
+    }
+}
+
+label {
+    padding-right:1em;
+}
+
+.ui-datepicker{
+    padding:1em 1.5em;
+    background: #fff;
+    box-shadow:1px 5px 18px #ccc;
+}
+
+footer{
+    color:#ccc;
+}
+
+input{
+    display:block;
+}
+input[type=checkbox]{
+    display:inline;
+}

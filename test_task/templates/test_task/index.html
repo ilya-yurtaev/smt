@@ -1,4 +1,20 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load staticfiles %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/main.min.css' %}" type="text/css" />
+{% endblock %}
+
+{% block title %}Please stand by{% endblock %}
 
 {% block content %}
+<div id="data"></div>
+{% endblock %}
+
+{% block sidebar %}
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="{% static 'js/vendor.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/templates.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/app.js' %}"></script>
 {% endblock %}

@@ -6,14 +6,14 @@ from .views import IndexView
 from . import api
 
 
-dynamic_api = Api(api_name='dynamic')
+v1_api = Api(api_name='v1')
 
 for resource in api.__all__:
-    dynamic_api.register(getattr(api, resource)())
+    v1_api.register(getattr(api, resource)())
 
 
 urlpatterns = patterns(
     '',
-    url(r'^api/', include(dynamic_api.urls)),
+    url(r'^api/', include(v1_api.urls)),
     url(r'^$', IndexView.as_view(), name="test_task_index"),
 )

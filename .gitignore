@@ -56,3 +56,7 @@ docs/_build/
 *.sql
 *.sqlite
 *.sqlite3
+
+# frontend
+node_modules/
+assets/vendor/
