@@ -1,7 +1,7 @@
 from tastypie.resources import ModelResource
 from tastypie.authorization import Authorization
 
-from .utils import get_models
+from .utils import get_models, get_plurals, get_inflections
 
 
 class ResourceMixin(object):
@@ -9,14 +9,17 @@ class ResourceMixin(object):
         # get verbose names
         schema = super(ResourceMixin, self).build_schema()
         fields = self._meta.object_class._meta.fields
+        verbose_name = self._meta.object_class._meta.verbose_name
 
         for f in fields:
             schema["fields"][f.name]['verbose_name'] = f.verbose_name
 
         schema.update({
-            'verbose_name': self._meta.object_class._meta.verbose_name,
+            'verbose_name': verbose_name,
             'verbose_name_plural':
                 self._meta.object_class._meta.verbose_name_plural,
+            'plural_forms': get_plurals(verbose_name),
+            'inflections': get_inflections(verbose_name),
         })
 
         return schema

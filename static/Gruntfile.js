@@ -17,6 +17,7 @@ module.exports = function(grunt) {
             vendor_js: [
                 'assets/vendor/jquery/dist/jquery.js',
                 'assets/vendor/jquery-ui/ui/datepicker.js',
+                'assets/vendor/jquery-ui/ui/i18n/datepicker-ru.js',
                 'assets/vendor/jquery-cookie/jquery.cookie.js',
                 'assets/vendor/underscore/underscore.js',
                 'assets/vendor/backbone/backbone.js',

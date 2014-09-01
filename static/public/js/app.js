@@ -73,6 +73,31 @@ var app = app || {};
         }
     };
 
+    app.inflect = function(key){
+        return app.get_current_collection().schema.inflections[key];
+    };
+
+    app.pluralize = function(n, forms){
+        var f1 = forms[0];
+        var f2 = forms[1];
+        var f5 = forms[2];
+
+        var n1 = n % 100;
+        var n2 = n % 10;
+
+        if(n1 > 10 && n1 < 20){
+            return f5;
+        }
+        if(n2 > 1 && n2 < 5){
+            return f2;
+        }
+        if(n2 === 1){
+            return f1;
+        }
+
+        return f5;
+    };
+
     app.init = function(){
         var csrftoken = $.cookie('csrftoken');
 

@@ -75,7 +75,7 @@ var app = app || {};
             var id = "id_"+name;
             return (
                 <p>
-                    <label for={id}>{field.verbose_name}</label>
+                    <label htmlFor={id}>{field.verbose_name}</label>
                     <input id={id} type={FIELD_MAP[field.type]} />
                 </p>
             )
@@ -83,7 +83,7 @@ var app = app || {};
 
         toggle_form: function(event){
             this.setState({form: this.state.form == "visible" ? "hidden": "visible"});
-            $("#modelform").toggle("slow");
+            $("#modelform").toggle(300);
         },
 
         handleSubmit: function(event){
@@ -93,8 +93,12 @@ var app = app || {};
 
         render: function(){
             this.schema = this.props.schema;
-            var add_link_title = "Добавить элемент ";
-            add_link_title += this.state.form == "visible"? "-" : "+";
+            var add_link_title = "Добавить "+app.inflect('accs')+" ";
+            var items_total = this.props.collection.length;
+            var plural_form = app.pluralize(items_total, this.schema.plural_forms);
+            var cols = Object.keys(this.schema.fields).length;
+
+            add_link_title += this.state.form == "visible"? "–" : "+";
 
             return (
                 <div>
@@ -104,6 +108,10 @@ var app = app || {};
                             {this.props.collection.map(this.create_row)}
                         </tbody>
                         <tfoot>
+                            <tr>
+                                <td colSpan={cols}>{items_total} {plural_form}</td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                     <p><span className="link" onClick={this.toggle_form}>{add_link_title}</span></p>
@@ -180,7 +188,8 @@ var app = app || {};
         );
 
         $(".hidden").hide();
-        $("input[type=datetime]").datepicker({dateFormat: "yy-mm-dd"});
+        $("input[type=datetime]").datepicker($.datepicker.regional['ru']);
+        $("input[type=datetime]").datepicker("option", "dateFormat", "yy-mm-dd");
     };
 
 })();
