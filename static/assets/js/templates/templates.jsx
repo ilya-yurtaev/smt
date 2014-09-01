@@ -26,8 +26,33 @@ var app = app || {};
         'datetime': 'datetime',
         'integer': 'number',
         'boolean': 'checkbox',
-    }
+    };
 
+    var Cell = React.createClass({
+        getInitialState: function(){
+            return {
+                "editable": false,
+            }
+        },
+
+        handleClick: function(event){
+            this.setState({"editable": true});
+        },
+
+        handleBlur: function(event){
+            this.setState({"editable": false});
+        },
+
+        render: function(){
+            return (
+                <td className={this.props.field_type}
+                    onClick={this.handleClick}
+                    onBlur={this.handleBlur}
+                    contentEditable={this.state.editable}
+                >{this.props.field_name}</td>
+            )
+        },
+    });
 
     var Table = React.createClass({
         mixins: [Backbone.React.Component.mixin],
@@ -38,45 +63,53 @@ var app = app || {};
             }
         },
 
-        cellClicked: function(event){
-            var el = event.target;
+        create_cells: function(obj){
+            var cells = [];
+
+            _.each(this.fields, function(field, order){
+                cells.push(
+                    <Cell field_type={field.field.type} field_name={obj[field.name]} />
+                );
+            });
+
+            return cells;
         },
 
-        create_cell: function(value, key){
+        create_th: function(field, order){
+            var field = field.field;
             return (
-                <td className={key}
-                    onClick={this.cellClicked}
-                >{value}</td>
-            );
-        },
-
-        create_th: function(key, value){
-            return (
-                <th className={key.type} scope="col">{key.verbose_name}</th>
+                <th className={field.type} scope="col">{field.verbose_name}</th>
             )
         },
 
         create_thead: function(){
-            var fields = this.schema.fields;
             return (
-                <tr>{_.map(fields, this.create_th)}</tr>
+                <tr>{_.map(this.fields, this.create_th)}</tr>
             )
         },
 
         create_row: function(obj){
             return (
-                <tr key={obj.id} data-url={obj.resource_uri}>{_.map(obj, this.create_cell)}</tr>
+                <tr key={obj.id} data-url={obj.resource_uri}>{this.create_cells(obj)}</tr>
             );
         },
 
-        create_inputs: function(field, name){
-            if(name == "id" || name == "resource_uri") return;
+        create_inputs: function(field, order){
+            if(field.name == "id" || field.name == "resource_uri") return;
+
+            var name = field.name;
+            var field = field.field;
+            var required = !field.blank? "required" : '';
 
             var id = "id_"+name;
             return (
                 <p>
                     <label htmlFor={id}>{field.verbose_name}</label>
-                    <input id={id} type={FIELD_MAP[field.type]} />
+                    <input id={id}
+                        type={FIELD_MAP[field.type]}
+                        name={name}
+                        required={required}
+                    />
                 </p>
             )
         },
@@ -88,15 +121,38 @@ var app = app || {};
 
         handleSubmit: function(event){
             stop(event);
-            alert($(event.target).serializeArray());
+            var data = Backbone.Syphon.serialize(event.target);
+            var collection = app.get_current_collection();
+            collection.add(data);
+            collection.sync();
+            $(event.target)
+                .find("input, textarea")
+                .removeAttr('checked')
+                .removeAttr('selected')
+                .not(':button, :submit, :reset, :hidden, :radio, :checkbox')
+                .val('');
         },
 
         render: function(){
-            this.schema = this.props.schema;
+            var schema = this.props.schema;
+            var ordered_fields = {};
+            var order = _.invert(schema.fields_order);
+            _.map(
+                _.omit(schema.fields, app.exclude_fields),
+                function(field, name){
+                    ordered_fields[order[name]] = {
+                        name: name,
+                        field: field
+                    }
+                }
+            );
+            this.schema = schema;
+            this.fields = ordered_fields;
+
             var add_link_title = "Добавить "+app.inflect('accs')+" ";
             var items_total = this.props.collection.length;
             var plural_form = app.pluralize(items_total, this.schema.plural_forms);
-            var cols = Object.keys(this.schema.fields).length;
+            var cols = _.keys(this.fields).length;
 
             add_link_title += this.state.form == "visible"? "–" : "+";
 
@@ -124,9 +180,9 @@ var app = app || {};
                         >
 
                         <fieldset>
-                            {_.map(this.schema.fields, this.create_inputs)}
+                            {_.map(this.fields, this.create_inputs)}
                         </fieldset>
-                        <p class="submit"><input type="submit" value="Добавить" /></p>
+                        <p className="submit"><input type="submit" value="Добавить" /></p>
                     </form>
                 </div>
             );

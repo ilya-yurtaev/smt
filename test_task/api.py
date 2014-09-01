@@ -6,7 +6,6 @@ from .utils import get_models, get_plurals, get_inflections
 
 class ResourceMixin(object):
     def build_schema(self):
-        # get verbose names
         schema = super(ResourceMixin, self).build_schema()
         fields = self._meta.object_class._meta.fields
         verbose_name = self._meta.object_class._meta.verbose_name
@@ -20,6 +19,7 @@ class ResourceMixin(object):
                 self._meta.object_class._meta.verbose_name_plural,
             'plural_forms': get_plurals(verbose_name),
             'inflections': get_inflections(verbose_name),
+            'fields_order': dict(enumerate(f.name for f in fields)),
         })
 
         return schema

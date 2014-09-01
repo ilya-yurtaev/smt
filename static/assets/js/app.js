@@ -8,7 +8,7 @@ var app = app || {};
     app.models = {};
     app.routes = {};
     app.collections = {};
-
+    app.exclude_fields = ['resource_uri'];
     app.current_collection = undefined;
 
     app.set_title = function(title){
@@ -54,7 +54,7 @@ var app = app || {};
     app.build_router = function(){
         var Router = Backbone.Router.extend({
             routes: {
-                "model/:id": "switchCollection",
+                ":collection": "switchCollection",
             },
 
             switchCollection: function(collection){
@@ -138,7 +138,7 @@ var app = app || {};
     };
 
     app.build_url = function(resource_name){
-        return "#/model/" + resource_name;
+        return "#" + resource_name;
     };
 
     app.mount = function(){

@@ -7,6 +7,10 @@ body{
     padding:1.5em;
 }
 
+.box-shadow(){
+    box-shadow:1px 5px 18px #ccc;
+}
+
 .link{
     color:@brand-primary;
     border-bottom:1px dotted @brand-primary;
@@ -89,10 +93,20 @@ label {
     padding-right:1em;
 }
 
+#modelform{
+    .box-shadow();
+    padding:1em;
+    margin: 1em -1em;
+    fieldset{
+        padding:0;
+        border:none;
+    }
+}
+
 .ui-datepicker{
     padding:1em 3em 1em 1.5em;
     background: #fff;
-    box-shadow:1px 5px 18px #ccc;
+    .box-shadow();
 }
 
 footer{
