@@ -23,18 +23,33 @@ var app = app || {};
         var name = params.resource_name;
 
         var Model = Backbone.Model.extend({
+            urlRoot: params.url,
+            attributes: params.schema.fields,
         });
 
         params.model = Model;
         params.parse = function(data, options){
+            // pagination
+            this.meta = data.meta;
+
             return data.objects;
         };
 
-        var Collection = Backbone.Collection.extend(params);
+        var Collection = Backbone.PageableCollection.extend(params);
 
         app.routes[name] = params.verbose_name_plural;
-        app.models[name] = Model;
-        app.collections[name] = new Collection();
+        app.collections[name] = new Collection([], {
+            state: {
+                firstPage: 0,
+                currentPage: 0,
+            },
+
+            queryParams: {
+                currentPage: "offset",
+                pageSize: "limit",
+            }
+
+        });
     };
 
     app.switch_collection = function(collection_name){
@@ -63,14 +78,6 @@ var app = app || {};
         });
 
         app.router = new Router();
-    };
-
-    app.observe = function(n){
-        // dummy observer
-        app._requests += n;
-        if(app._requests === 0){
-            $.event.trigger("requests_completed");
-        }
     };
 
     app.inflect = function(key){
@@ -115,12 +122,12 @@ var app = app || {};
 
 
         $.getJSON(app.root_url, function(data){
-            app.observe(Object.keys(data).length);
+            // mount after all requests
+            var mount =_.after(_.keys(data).length, app.mount);
 
             // redundant queries,
             // but overriding tastypie.Api.top_level is much uglier
-
-            $.each(data, function(resource_name, resource_description){
+            _.each(data, function(resource_description, resource_name){
                 app.set_initial_collection(resource_name);
 
                 $.getJSON(resource_description.schema, function(schema){
@@ -131,7 +138,7 @@ var app = app || {};
                         verbose_name: schema.verbose_name,
                         verbose_name_plural: schema.verbose_name_plural,
                     });
-                    app.observe(-1);
+                    mount();
                 });
             });
         });
@@ -146,7 +153,7 @@ var app = app || {};
 
         Backbone.history.start();
 
-        //app.router.navigate(app.build_url(app.current_collection), {trigger: true});
+        app.router.navigate(app.build_url(app.current_collection), {trigger: true});
 
         app.render_menu();
     };

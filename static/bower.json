@@ -28,6 +28,7 @@
     "jquery-ui": "~1.11.1",
     "backbone": "~1.1.2",
     "backbone-react-component": "~0.7.0",
-    "backbone.syphon": "~0.4.1"
+    "backbone.syphon": "~0.4.1",
+    "backbone.paginator": "~2.0.2"
   }
 }

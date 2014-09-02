@@ -41,6 +41,7 @@ var app = app || {};
 
         handleBlur: function(event){
             this.setState({"editable": false});
+            alert(event.target.innerText);
         },
 
         render: function(){
@@ -56,12 +57,6 @@ var app = app || {};
 
     var Table = React.createClass({
         mixins: [Backbone.React.Component.mixin],
-
-        getInitialState: function(){
-            return {
-                'form': "hidden",
-            }
-        },
 
         create_cells: function(obj){
             var cells = [];
@@ -94,6 +89,59 @@ var app = app || {};
             );
         },
 
+        render: function(){
+            var schema = this.props.schema;
+            var ordered_fields = {};
+            var order = _.invert(schema.fields_order);
+            _.map(
+                _.omit(schema.fields, app.exclude_fields),
+                function(field, name){
+                    ordered_fields[order[name]] = {
+                        name: name,
+                        field: field
+                    }
+                }
+            );
+            this.schema = schema;
+            this.fields = ordered_fields;
+
+            var items_shown = this.props.collection.length;
+            var plural_form = app.pluralize(items_shown, this.schema.plural_forms);
+            var tfoot_text = [items_shown, plural_form].join(" "); 
+
+            var cols = _.keys(this.fields).length;
+
+            return (
+                <div>
+                    <table id="data-table">
+                        <thead>{this.create_thead()}</thead>
+                        <tbody>
+                            {this.props.collection.map(this.create_row)}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan={cols}>{tfoot_text}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <Form root_url={this.props.root_url} fields={this.fields} />
+                </div>
+            )
+        }
+    });
+
+    var Form = React.createClass({
+        getInitialState: function(){
+            return {
+                visible: false,
+            }
+        },
+
+        toggle_form: function(event){
+            this.setState({form: this.state.visible ? true: false});
+            $("#modelform").toggle(300);
+        },
+
         create_inputs: function(field, order){
             if(field.name == "id" || field.name == "resource_uri") return;
 
@@ -114,17 +162,12 @@ var app = app || {};
             )
         },
 
-        toggle_form: function(event){
-            this.setState({form: this.state.form == "visible" ? "hidden": "visible"});
-            $("#modelform").toggle(300);
-        },
-
         handleSubmit: function(event){
-            stop(event);
+            stop(event); //wonder why html5 validation still works
             var data = Backbone.Syphon.serialize(event.target);
             var collection = app.get_current_collection();
-            collection.add(data);
-            collection.sync();
+            collection.create(data, {wait: true});
+
             $(event.target)
                 .find("input, textarea")
                 .removeAttr('checked')
@@ -133,54 +176,23 @@ var app = app || {};
                 .val('');
         },
 
-        render: function(){
-            var schema = this.props.schema;
-            var ordered_fields = {};
-            var order = _.invert(schema.fields_order);
-            _.map(
-                _.omit(schema.fields, app.exclude_fields),
-                function(field, name){
-                    ordered_fields[order[name]] = {
-                        name: name,
-                        field: field
-                    }
-                }
-            );
-            this.schema = schema;
-            this.fields = ordered_fields;
-
+        render:function(){
             var add_link_title = "Добавить "+app.inflect('accs')+" ";
-            var items_total = this.props.collection.length;
-            var plural_form = app.pluralize(items_total, this.schema.plural_forms);
-            var cols = _.keys(this.fields).length;
-
-            add_link_title += this.state.form == "visible"? "–" : "+";
+            add_link_title += this.state.visible? "–" : "+";
 
             return (
                 <div>
-                    <table id="data-table">
-                        <thead>{this.create_thead()}</thead>
-                        <tbody>
-                            {this.props.collection.map(this.create_row)}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan={cols}>{items_total} {plural_form}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
                     <p><span className="link" onClick={this.toggle_form}>{add_link_title}</span></p>
 
                     <form method="post"
                         id="modelform"
                         action={this.props.root_url}
-                        className={this.state.form}
+                        className={this.state.visible?"visible":"hidden"}
                         onSubmit={this.handleSubmit}
                         >
 
                         <fieldset>
-                            {_.map(this.fields, this.create_inputs)}
+                            {_.map(this.props.fields, this.create_inputs)}
                         </fieldset>
                         <p className="submit"><input type="submit" value="Добавить" /></p>
                     </form>
