@@ -5,6 +5,8 @@ South==1.0
 argparse==1.2.1
 django-tastypie==0.11.1
 docopt==0.6.2
+ipdb==0.8
+ipython==2.2.0
 mixer==4.8.1
 pymorphy2==0.8
 pymorphy2-dicts==2.4.390857.3662349
