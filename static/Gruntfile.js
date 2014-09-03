@@ -23,7 +23,7 @@ module.exports = function(grunt) {
                 'assets/vendor/backbone/backbone.js',
                 'assets/vendor/backbone.paginator/lib/backbone.paginator.js',
                 'assets/vendor/backbone.syphon/lib/backbone.syphon.js',
-                'assets/vendor/react/react-with-addons.js',
+                'assets/vendor/react/react.js',
                 'assets/vendor/backbone-react-component/lib/component.js',
             ],
         },

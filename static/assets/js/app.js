@@ -10,6 +10,17 @@ var app = app || {};
     app.collections = {};
     app.exclude_fields = ['resource_uri'];
     app.current_collection = undefined;
+    app.FIELD_MAP = {
+        'string': 'text',
+        'datetime': 'datetime',
+        'integer': 'number',
+        'boolean': 'checkbox',
+    };
+
+    app.get_field_type = function(key){
+        return app.FIELD_MAP[key];
+    };
+
 
     app.set_title = function(title){
         document.title = title;
@@ -106,18 +117,8 @@ var app = app || {};
     };
 
     app.init = function(){
-        var csrftoken = $.cookie('csrftoken');
-
-        function csrfSafeMethod(method) {
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
+        $(document.body).ajaxStart(function(){
+            app.set_title("Pleas stand by");
         });
 
 
@@ -152,9 +153,7 @@ var app = app || {};
         app.build_router();
 
         Backbone.history.start();
-
         app.router.navigate(app.build_url(app.current_collection), {trigger: true});
-
         app.render_menu();
     };
 

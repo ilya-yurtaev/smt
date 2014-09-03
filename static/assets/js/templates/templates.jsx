@@ -5,54 +5,105 @@ var app = app || {};
 (function(){
     'use strict';
 
+    var ESC = 27, ENTER = 13; 
+    var datepicker_params = $.datepicker.regional['ru'];
+    datepicker_params.dateFormat = "yy-mm-dd";
+    datepicker_params.prevText = "&larr;";
+    datepicker_params.nextText = "&rarr;";
+
     function _id(id){
         return $(id).get()[0];
     };
 
-    function stop(event){
-        event.preventDefault();
-        event.stopPropagation();
-    };
-
-    function remount(id){
-        if((id).length > 1){
-            React.unmountComponentAtNode(_id(id));
-            $(id).empty();
-        };
-    };
-
-    var FIELD_MAP = {
-        'string': 'text',
-        'datetime': 'datetime',
-        'integer': 'number',
-        'boolean': 'checkbox',
+    function stop(e){
+        e.preventDefault();
+        e.stopPropagation();
     };
 
     var Cell = React.createClass({
         getInitialState: function(){
             return {
-                "editable": false,
+                old_value: undefined,
+                value: undefined,
+                changed: false,
+                editable: false,
             }
         },
 
-        handleClick: function(event){
-            this.setState({"editable": true});
+        handleFocus: function(e){
+            var node = e.target;
+            this.setState({old_value: node.value});
+
+            switch($(node).attr("type")){
+                case "text":
+                    node.setSelectionRange(0, node.value.length);
+                    break;
+                case "datetime":
+                    var params = datepicker_params;
+                    $(node).datepicker(datepicker_params)
+            };
         },
 
-        handleBlur: function(event){
-            this.setState({"editable": false});
-            alert(event.target.innerText);
+        save: function(name, value){
+            this.setState({value: value});
+            // treats model like new one and produces PUT instead of PATCH OH SHI
+            var model = app.get_current_collection().get(this.obj.id);
+            var params = {};
+            params[name] = value;
+            model.save(params);
+            app.get_current_collection().fetch();
+        },
+
+        handleKeyUp: function(e){
+            switch(e.keyCode){
+                case ENTER:
+                    // save
+                    var node = e.target;
+                    this.save(node.name, node.value);
+                    $(node).trigger("blur");
+                    break;
+                default:
+                    this.setState({value: this.state.old_value})
+            }
+        },
+
+        handleBlur: function(e){
+            this.setState({editable: false});
+        },
+
+        handleClick: function(e){
+            this.setState({editable: true});
+            // autofocus attribute on number fields won't work in FF
         },
 
         render: function(){
+            this.obj = this.props.obj;
+
+            this.field = this.props.field.field;
+            var value = this.state.value || this.obj[this.props.field.name];
+
+            var input = <input
+                title="Press Enter to save"
+                disabled={this.field.editable}
+                type={app.get_field_type(this.field.type)}
+                name={this.props.field.name}
+                defaultValue={value}
+                onKeyUp={this.handleKeyUp}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+                autoFocus
+                size={value.length}
+            />;
+
+            var span = <span>{value}</span>;
+            var node = this.state.editable?input:span;
+
             return (
-                <td className={this.props.field_type}
-                    onClick={this.handleClick}
-                    onBlur={this.handleBlur}
-                    contentEditable={this.state.editable}
-                >{this.props.field_name}</td>
+                <td onClick={this.handleClick}>
+                    {node}
+                </td>
             )
-        },
+        }
     });
 
     var Table = React.createClass({
@@ -63,7 +114,7 @@ var app = app || {};
 
             _.each(this.fields, function(field, order){
                 cells.push(
-                    <Cell field_type={field.field.type} field_name={obj[field.name]} />
+                    <Cell field={field} obj={obj} />
                 );
             });
 
@@ -85,7 +136,7 @@ var app = app || {};
 
         create_row: function(obj){
             return (
-                <tr key={obj.id} data-url={obj.resource_uri}>{this.create_cells(obj)}</tr>
+                <tr key={obj.id} data-url={obj.resource_uri} data-id={obj.id}>{this.create_cells(obj)}</tr>
             );
         },
 
@@ -102,14 +153,13 @@ var app = app || {};
                     }
                 }
             );
+            var items_shown = this.props.collection.length;
+            var plural_form = app.pluralize(items_shown, schema.plural_forms);
+            var tfoot_text = [items_shown, plural_form].join(" "); 
+            var cols = _.keys(this.fields).length;
+
             this.schema = schema;
             this.fields = ordered_fields;
-
-            var items_shown = this.props.collection.length;
-            var plural_form = app.pluralize(items_shown, this.schema.plural_forms);
-            var tfoot_text = [items_shown, plural_form].join(" "); 
-
-            var cols = _.keys(this.fields).length;
 
             return (
                 <div>
@@ -137,7 +187,7 @@ var app = app || {};
             }
         },
 
-        toggle_form: function(event){
+        toggle_form: function(e){
             this.setState({form: this.state.visible ? true: false});
             $("#modelform").toggle(300);
         },
@@ -154,7 +204,7 @@ var app = app || {};
                 <p>
                     <label htmlFor={id}>{field.verbose_name}</label>
                     <input id={id}
-                        type={FIELD_MAP[field.type]}
+                        type={app.get_field_type(field.type)}
                         name={name}
                         required={required}
                     />
@@ -162,23 +212,19 @@ var app = app || {};
             )
         },
 
-        handleSubmit: function(event){
-            stop(event); //wonder why html5 validation still works
-            var data = Backbone.Syphon.serialize(event.target);
+        handleSubmit: function(e){
+            stop(e);
+            var data = Backbone.Syphon.serialize(e.target);
             var collection = app.get_current_collection();
-            collection.create(data, {wait: true});
+            collection.create(data);
 
-            $(event.target)
-                .find("input, textarea")
-                .removeAttr('checked')
-                .removeAttr('selected')
-                .not(':button, :submit, :reset, :hidden, :radio, :checkbox')
-                .val('');
+            $(e.target).trigger("reset");
         },
 
         render:function(){
-            var add_link_title = "Добавить "+app.inflect('accs')+" ";
-            add_link_title += this.state.visible? "–" : "+";
+            var add_link_title = [
+                "Добавить ", app.inflect('accs'), this.state.visible? "–" : "+"
+            ].join(" ");
 
             return (
                 <div>
@@ -208,8 +254,8 @@ var app = app || {};
             }
         },
 
-        switchCollection: function(event){
-            this.setState({'path': event.target.href.split("#")[1]});
+        switchCollection: function(e){
+            this.setState({'path': e.target.href.split("#")[1]});
         },
 
         create_link: function(title, link){
@@ -245,19 +291,23 @@ var app = app || {};
     };
 
     app.render_table = function(collection){
-        remount("#data");
+        var data = _id("#data");
+
+        if(data){
+            React.unmountComponentAtNode(data);
+        };
+
         React.renderComponent(
             <Table
                 collection={collection}
+                model={collection.model}
                 schema={collection.schema}
                 root_url={collection.url}
             />,
-            _id("#data")
+            data
         );
 
-        $(".hidden").hide();
-        $("input[type=datetime]").datepicker($.datepicker.regional['ru']);
-        $("input[type=datetime]").datepicker("option", "dateFormat", "yy-mm-dd");
+        $("input[type=datetime]").datepicker(datepicker_params);
     };
 
 })();

@@ -1,1 +1,1 @@
-== Doc for pet project frontend workflow layout ==
+== Doc for smt project project frontend workflow layout ==

@@ -32,6 +32,7 @@ def build_resource(model):
         queryset = model.objects.all()
         resource_name = model._meta.db_table
         authorization = Authorization()
+        always_return_data = True
 
     attrs = {
         'Meta': Meta
