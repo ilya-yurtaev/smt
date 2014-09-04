@@ -195,7 +195,7 @@ var app = app || {};
         },
 
         toggle_form: function(e){
-            this.setState({form: this.state.visible ? true: false});
+            this.setState({visible: !this.state.visible});
             $("#modelform").toggle(300);
         },
 
