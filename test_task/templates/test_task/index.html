@@ -14,13 +14,7 @@
 {% endblock %}
 
 {% block js %}
-{% if debug %}
 <script type="text/javascript" src="{% static 'js/vendor.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/templates.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
-{% else %}
-<script type="text/javascript" src="{% static 'js/vendor.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/templates.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/app.min.js' %}"></script>
-{% endif %}
 {% endblock %}

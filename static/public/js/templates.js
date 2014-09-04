@@ -12,7 +12,6 @@ var app = app || {};
         // really ugly
         var input = el.input[0];
         if($(input).attr("type")=="button"){
-            console.log("button");
             var model = app.get_current_collection().get($(input).attr("data-object-id"));
             var params = {};
             params[input.name] = $(input).val();

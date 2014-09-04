@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'aw$szxrt+f^td(d&_9co!z91%h_*2gttu)+ppo)dcce2#32v_#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', False)
+DEBUG = os.environ.get('DJANGO_DEBUG', True)
 TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = []
@@ -105,3 +105,8 @@ ALLOWED_HOSTS = (
     'localhost',
     'smt.okb59.ru',
 )
+
+try:
+    from settings_prod import *
+except ImportError:
+    pass
