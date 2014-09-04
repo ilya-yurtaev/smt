@@ -101,6 +101,7 @@ var app = app || {};
                 onFocus: this.handleFocus, 
                 onKeyDown: this.handleKeyDown, 
                 'data-object-id': this.obj.id, 
+                required: this.field.blank?"":"required", 
                 size: value.length, 
                 className: app.get_field_type(this.field.type)}
             );

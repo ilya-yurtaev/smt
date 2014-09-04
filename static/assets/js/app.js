@@ -117,11 +117,6 @@ var app = app || {};
     };
 
     app.init = function(){
-        $(document.body).ajaxStart(function(){
-            app.set_title("Pleas stand by");
-        });
-
-
         $.getJSON(app.root_url, function(data){
             // mount after all requests
             var mount =_.after(_.keys(data).length, app.mount);
@@ -160,5 +155,3 @@ var app = app || {};
     app.init();
 
 })();
-
-$(document).on("requests_completed", app.mount);
