@@ -79,9 +79,15 @@ table{
     }
     td{
         border-bottom: 1px solid #ccc;
-        input, select, textarea{
-            padding:5px;
+        input[type=button]{
+            border:none;
+            background:inherit;
+        }
+        input:not([type=button]){
+            padding:7px;
             margin:-7px;
+            box-shadow:inset 1px 3px 5px #ccc;
+            border:none;
         }
     }
     tfoot{

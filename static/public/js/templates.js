@@ -1,5 +1,3 @@
-/** @jsx React.DOM */
-
 var app = app || {};
 
 (function(){
@@ -33,7 +31,7 @@ var app = app || {};
         e.stopPropagation();
     };
 
-    var Cell = React.createClass({
+    var Cell = React.createClass({displayName: 'Cell',
         getInitialState: function(){
             return {
                 old_value: undefined,
@@ -94,29 +92,29 @@ var app = app || {};
             var value = this.state.value || this.obj[this.props.field.name];
             var title = "Press Enter to save, Escape to cancel";
 
-            var input = <input
-                onClick={this.handleClick}
-                type={this.state.editable?app.get_field_type(this.field.type):"button"}
-                name={this.props.field.name}
-                defaultValue={value}
-                title={title}
-                onBlur={this.handleBlur}
-                onFocus={this.handleFocus}
-                onKeyDown={this.handleKeyDown}
-                data-object-id={this.obj.id}
-                size={value.length}
-                className={app.get_field_type(this.field.type)}
-            />;
+            var input = React.DOM.input({
+                onClick: this.handleClick, 
+                type: this.state.editable?app.get_field_type(this.field.type):"button", 
+                name: this.props.field.name, 
+                defaultValue: value, 
+                title: title, 
+                onBlur: this.handleBlur, 
+                onFocus: this.handleFocus, 
+                onKeyDown: this.handleKeyDown, 
+                'data-object-id': this.obj.id, 
+                size: value.length, 
+                className: app.get_field_type(this.field.type)}
+            );
 
             return (
-                <td>
-                    {input}
-                </td>
+                React.DOM.td(null, 
+                    input
+                )
             )
         }
     });
 
-    var Table = React.createClass({
+    var Table = React.createClass({displayName: 'Table',
         mixins: [Backbone.React.Component.mixin],
 
         create_cells: function(obj){
@@ -124,7 +122,7 @@ var app = app || {};
 
             _.each(this.fields, function(field, order){
                 cells.push(
-                    <Cell field={field} obj={obj} />
+                    Cell({field: field, obj: obj})
                 );
             });
 
@@ -134,19 +132,19 @@ var app = app || {};
         create_th: function(field, order){
             var field = field.field;
             return (
-                <th className={field.type} scope="col">{field.verbose_name}</th>
+                React.DOM.th({className: field.type, scope: "col"}, field.verbose_name)
             )
         },
 
         create_thead: function(){
             return (
-                <tr>{_.map(this.fields, this.create_th)}</tr>
+                React.DOM.tr(null, _.map(this.fields, this.create_th))
             )
         },
 
         create_row: function(obj){
             return (
-                <tr key={obj.id} data-url={obj.resource_uri} data-id={obj.id}>{this.create_cells(obj)}</tr>
+                React.DOM.tr({key: obj.id, 'data-url': obj.resource_uri, 'data-id': obj.id}, this.create_cells(obj))
             );
         },
 
@@ -172,25 +170,25 @@ var app = app || {};
             this.fields = ordered_fields;
 
             return (
-                <div>
-                    <table id="data-table">
-                        <thead>{this.create_thead()}</thead>
-                        <tbody>
-                            {this.props.collection.map(this.create_row)}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan={cols}>{tfoot_text}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <Form root_url={this.props.root_url} fields={this.fields} />
-                </div>
+                React.DOM.div(null, 
+                    React.DOM.table({id: "data-table"}, 
+                        React.DOM.thead(null, this.create_thead()), 
+                        React.DOM.tbody(null, 
+                            this.props.collection.map(this.create_row)
+                        ), 
+                        React.DOM.tfoot(null, 
+                            React.DOM.tr(null, 
+                                React.DOM.td({colSpan: cols}, tfoot_text)
+                            )
+                        )
+                    ), 
+                    Form({root_url: this.props.root_url, fields: this.fields})
+                )
             )
         }
     });
 
-    var Form = React.createClass({
+    var Form = React.createClass({displayName: 'Form',
         getInitialState: function(){
             return {
                 visible: false,
@@ -211,15 +209,15 @@ var app = app || {};
 
             var id = "id_"+name;
             return (
-                <p>
-                    <label htmlFor={id}>{field.verbose_name}</label>
-                    <input id={id}
-                        type={app.get_field_type(field.type)}
-                        name={name}
-                        required={required}
-                        className={app.get_field_type(field.type)}
-                    />
-                </p>
+                React.DOM.p(null, 
+                    React.DOM.label({htmlFor: id}, field.verbose_name), 
+                    React.DOM.input({id: id, 
+                        type: app.get_field_type(field.type), 
+                        name: name, 
+                        required: required, 
+                        className: app.get_field_type(field.type)}
+                    )
+                )
             )
         },
 
@@ -238,27 +236,27 @@ var app = app || {};
             ].join(" ");
 
             return (
-                <div>
-                    <p><span className="link" onClick={this.toggle_form}>{add_link_title}</span></p>
+                React.DOM.div(null, 
+                    React.DOM.p(null, React.DOM.span({className: "link", onClick: this.toggle_form}, add_link_title)), 
 
-                    <form method="post"
-                        id="modelform"
-                        action={this.props.root_url}
-                        className={this.state.visible?"visible":"hidden"}
-                        onSubmit={this.handleSubmit}
-                        >
+                    React.DOM.form({method: "post", 
+                        id: "modelform", 
+                        action: this.props.root_url, 
+                        className: this.state.visible?"visible":"hidden", 
+                        onSubmit: this.handleSubmit
+                        }, 
 
-                        <fieldset>
-                            {_.map(this.props.fields, this.create_inputs)}
-                        </fieldset>
-                        <p className="submit"><input type="submit" value="Добавить" /></p>
-                    </form>
-                </div>
+                        React.DOM.fieldset(null, 
+                            _.map(this.props.fields, this.create_inputs)
+                        ), 
+                        React.DOM.p({className: "submit"}, React.DOM.input({type: "submit", value: "Добавить"}))
+                    )
+                )
             );
         }
     });
 
-    var Menu = React.createClass({
+    var Menu = React.createClass({displayName: 'Menu',
         getInitialState: function(){
             return {
                 'path': app.build_url(app.current_collection)
@@ -274,17 +272,17 @@ var app = app || {};
             var cls = ~href.indexOf(this.state.path) ? 'active': '';
 
             return (
-                <li><a id={link}
-                        data-model={link}
-                        onClick={this.switchCollection}
-                        className={cls}
-                        href={href}>{title}</a>
-                </li>
+                React.DOM.li(null, React.DOM.a({id: link, 
+                        'data-model': link, 
+                        onClick: this.switchCollection, 
+                        className: cls, 
+                        href: href}, title)
+                )
             )
         },
         render: function(){
             return (
-                <ul>{_.map(this.props.links, this.create_link)}</ul>
+                React.DOM.ul(null, _.map(this.props.links, this.create_link))
             );
         }
     });
@@ -296,7 +294,7 @@ var app = app || {};
 
     app.render_menu = function(){
         React.renderComponent(
-            <Menu links={app.routes} />,
+            Menu({links: app.routes}),
             _id("#menu")
         );
     };
@@ -309,12 +307,12 @@ var app = app || {};
         };
 
         React.renderComponent(
-            <Table
-                collection={collection}
-                model={collection.model}
-                schema={collection.schema}
-                root_url={collection.url}
-            />,
+            Table({
+                collection: collection, 
+                model: collection.model, 
+                schema: collection.schema, 
+                root_url: collection.url}
+            ),
             data
         );
 

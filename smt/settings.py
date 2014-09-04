@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'aw$szxrt+f^td(d&_9co!z91%h_*2gttu)+ppo)dcce2#32v_#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', False)
 TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = []
@@ -97,3 +97,11 @@ TEMPLATE_DIRS = (
 TASTYPIE_DEFAULT_FORMATS = ['json']
 TASTYPIE_DATETIME_FORMATTING = 'iso-8601'
 TASTYPIE_ALLOW_MISSING_SLASH = True  # due to firefox confirm popup
+
+INTERNAL_IPS = (
+    '127.0.0.1',
+)
+ALLOWED_HOSTS = (
+    'localhost',
+    'smt.okb59.ru',
+)
